@@ -1,4 +1,5 @@
 # Modelos de políticas macroeconómicas I
+###### Proyecto previo de tesis:
 
 ```r
 #||||||||||||||||||||||||||||||||||||||||
