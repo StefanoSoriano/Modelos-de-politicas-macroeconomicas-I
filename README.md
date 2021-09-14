@@ -1,6 +1,22 @@
-# Modelos de politicas macroeconomicas I
+# Modelos de políticas macroeconómicas I
 
-
+```r
+#||||||||||||||||||||||||||||||||||||||||
+#||||||||||| @Markdown en OneDrive ||||||
+#||||||||||||||||||||||||||||||||||||||||
+rutaRmd_OneDrive <- paste("F:/OneDrive/Proyecto_", proyecto,"/",inf[7,5], sep = "")
+setwd(rutaRmd_OneDrive)
+rmarkdown::render("Markdown.Rmd", "html_document", encoding = "UTF-8")
+#||||||||||||||||||||||||||||||||||||||||
+#||||||||||| @Markdown en USB |||||||||||
+#||||||||||||||||||||||||||||||||||||||||
+rutaRmd_disk <- paste(as.character(toupper(inf[7,2])),":/",inf[7,5], sep = "")
+setwd(rutaRmd_disk)
+rmarkdown::render("Markdown.Rmd", "html_document", encoding = "UTF-8")
+#|||||||||||||||||||||||||||||||||||||||||||||||||
+#||||||||||| @Markdown Fin del proceso |||||||||||
+#|||||||||||||||||||||||||||||||||||||||||||||||||
+```
 
 ```r
                       #||||||||||||||||||||||||||||||||||||||||
