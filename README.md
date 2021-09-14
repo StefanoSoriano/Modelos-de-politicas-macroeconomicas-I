@@ -1,5 +1,5 @@
 # Modelos de políticas macroeconómicas I
-###### Proyecto previo de tesis:
+###### Proyecto previo de tesis (*borrador*):
 
 ```r
 #||||||||||||||||||||||||||||||||||||||||
@@ -1551,3 +1551,824 @@ write.csv(variables, log)
 
 resumen
 ```
+--- 
+
+    title: «title» 
+
+    author: «author»  
+
+    date: «date» 
+
+    output: html_document 
+
+--- 
+
+ 
+
+ 
+
+ 
+
+```{r echo=F, message=FALSE, warning=FALSE, paged.print=FALSE} 
+
+ 
+
+setwd('«ruta»') 
+
+«x» <- read.csv(«archivo_x», header = T, dec = '.', stringsAsFactors = F) 
+
+  
+
+ 
+
+library(astsa) 
+
+library(tseries) 
+
+library(timeSeries) 
+
+library(fGarch) 
+
+library(stats) 
+
+library(zoo) 
+
+ 
+
+ 
+
+ 
+
+``` 
+
+ 
+
+ 
+
+```{r echo=F, message=FALSE, warning=FALSE} 
+
+var_x <- «x» 
+
+«anual_x»var_x <- ts(var_x, start = c(«anhomin_x»), end = c(«anhomax_x»))  
+
+«anual_x»var_x <- var_x[, -1]  
+
+ 
+
+«difer_anual_x»var_x <- ts(var_x, start = c(«anhomin_x», «mes_x»), frequency = «frec_x»)  
+
+«difer_anual_x»var_x <- var_x[, -1]  
+
+var_x <- zoo::na.approx(var_x) 
+
+ 
+
+ 
+
+``` 
+
+ 
+
+### Graficando la actividad «var_name_x» de «edo_x» de «anhomin_x» a «anhomax_x». 
+
+ 
+
+```{r, echo=FALSE, message=F} 
+
+ 
+
+plot(var_x, type = 'l', main = 'Actividad «var_name_x» de «edo_x» de «anhomin_x» a «anhomax_x»',  sub = 'Fuente: INEGI', ylab= 'Actividad «var_name_x»', xlab='Año') 
+
+ 
+
+``` 
+
+ 
+
+### Aplico la prueba; Augmented Dickey-Fuller (adf.test) para observar si la serie tiene el problema de raíz unitaria. 
+
+ 
+
+```{r, echo=F, message=F, warning=FALSE} 
+
+test.raiz <- adf.test(var_x) 
+
+options(digits=4)  
+
+if (test.raiz$p.value < 0.05) 
+
+{ 
+
+valor <- test.raiz$p.value   
+
+    cat("No hay Raíz unitaria (serie de tiempo estacionaria) el valor p es: ", valor,    
+
+        "\ncomo esta serie no presenta raíz unitaria no se calcularán ni graficarán las diferencias.") 
+
+} else { 
+
+ valor <- test.raiz$p.value 
+
+    cat("Raíz unitaria (serie de tiempo no estacionaria) el valor p es: " , valor, 
+
+          
+
+        "\nDebido a que la serie no es estacionaria entonces se estabiliza la serie de tiempo", 
+
+ "\nantes de estimar el modelo.");      
+
+n_diff_x <- forecast::ndiffs(var_x, test = c("adf")) 
+
+    var_diff <- diff(var_x, n_diff_x) 
+
+    var_diff_log <- diff(log(var_x), n_diff_x) 
+
+ 
+
+ }     
+
+``` 
+
+ 
+
+«var_tend_x» 
+
+ 
+
+ 
+
+```{r, echo=FALSE, message=FALSE, include=«estaciMdw_x»} 
+
+«estaci2Script_x»plot(var_diff_log, type = 'l', main = 'Actividad «var_name_x» de «edo_x» de «anhomin_x» a «anhomax_x»',  sub = 'Fuente: INEGI', ylab= 'Logaritmo diferenciado', xlab='Año') 
+
+«estaci2Script_x»abline(h = mean(var_diff_log),col = 'blue') 
+
+ 
+
+ 
+
+``` 
+
+ 
+
+«var_est_x» 
+
+ 
+
+ 
+
+```{r, echo=FALSE, message=FALSE, include=«estacional_x»} 
+
+«estaci2Script_x»plot(diff(var_diff_log, lag = «S_s_x»), type = 'l', main = 'Actividad «var_name_x» de «edo_x» de «anhomin_x» a «anhomax_x»',  sub = 'Fuente: INEGI', ylab= 'Diferencias de orden «S_s_x»', xlab='Año') 
+
+«estaci2Script_x»abline(h = mean(diff(var_diff_log,lag = «S_s_x»)),col = 'blue') 
+
+ 
+
+``` 
+
+ 
+
+ 
+
+ 
+
+### Analizo las gráficas de la función de autocorrelación (ACF) y de la función de autocorrelación parcial (PACF) para obtener los patrones del proceso AR() y MA(). «correlo_x» «ar_puro_x» «ma_puro_x»  
+
+ 
+
+ 
+
+```{r, echo=FALSE, message=FALSE} 
+
+«estaci2Script_x»acf2(ts(var_diff, frequency = 1))  
+
+«estaciACFScript_x»acf2(ts(var_x, frequency = 1)) 
+
+  
+
+``` 
+
+ 
+
+ 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE} 
+
+ajuste_x <- arima(var_x, order=c(«p_s_x»,«d_s_x»,«q_s_x»), seasonal = list(order = c(«P_s_x1»,«D_s_x1»,«Q_s_x1»), period = «S_s_x»),method="«methAj_x»", include.mean = TRUE) 
+
+tsdiag(ajuste_x) 
+
+«var_name_x_p» <- var_x 
+
+ 
+
+``` 
+
+ 
+
+### Analizo los p valores del estadístico Ljung-Box statistic para observar que los rezagos estén por arriba de la banda azul, si están por arriba de esa banda los rezagos son estadísticamente significativos, lo que significa que el modelo es adecuado para pronosticar. Se observa que el modelo es ideal para pronosticar. 
+
+ 
+
+ 
+
+ 
+
+### **Pronóstico de «iteraciones_x» «periodo_x» de la actividad «var_name_x» de «edo_x».** 
+
+ 
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE} 
+
+ 
+
+pronostico <- sarima.for(«var_name_x_p», n.ahead = «iteraciones_x», p = «p_s_x», d =«d_s_x», q = «q_s_x», P = «P_s_x1», D = «D_s_x1», Q = «Q_s_x1», S = «S_s_x», no.constant = FALSE) 
+
+ 
+
+``` 
+
+ 
+
+ 
+
+### Valores de la predicción 
+
+ 
+
+ 
+
+```{r, echo=F, message=F} 
+
+(values.predict <- cbind(pronostico$pred))  
+
+ 
+
+``` 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+```{r, echo=F, message=F} 
+
+ 
+
+resid_ajuste_x <- ajuste_x$residuals 
+
+plot(resid_ajuste_x, main = "Graficando los residuos del ajuste del modelo.", ylab = "Residuos", type = "o") 
+
+abline(h = mean(resid_ajuste_x), col = "blue") 
+
+ 
+
+ 
+
+``` 
+
+ 
+
+ 
+
+#### Resumen estadístico del ajuste del modelo 
+
+ 
+
+ 
+
+```{r, echo=F, message=F} 
+
+cat("Sigma Cuadrado:", ajuste_x$sigma2) 
+
+cat("Media de los residuos:", mean(resid_ajuste_x)) 
+
+ 
+
+cat("Akaike:",ajuste_x$aic) 
+
+``` 
+
+ 
+
+ 
+
+ 
+
+```{r echo=F, message=FALSE, warning=FALSE, paged.print=FALSE} 
+
+setwd('«ruta»')  
+
+«y» <- read.csv(«archivo_y», header = T, dec = '.', stringsAsFactors = F) 
+
+ 
+
+``` 
+
+ 
+
+ 
+
+```{r echo=F, message=FALSE, warning=FALSE} 
+
+var_y <- «y» 
+
+«anual_y»var_y <- ts(var_y, start = c(«anhomin_y»), end = c(«anhomax_y»)) 
+
+«anual_y»var_y <- var_y[, - 1] 
+
+ 
+
+    «difer_anual_y»var_y <- ts(var_y, start = c(«anhomin_y», «mes_y»), frequency = «frec_y») 
+
+    «difer_anual_y»var_y <- var_y[, - 1] 
+
+var_y <- zoo::na.approx(var_y) 
+
+     
+
+ 
+
+``` 
+
+ 
+
+### Graficando la actividad «var_name_y» de «edo_y» de «anhomin_y» a «anhomax_y». 
+
+ 
+
+```{r, echo=FALSE, message=F} 
+
+ 
+
+ plot(var_y, type = 'l', main = 'Actividad «var_name_y» de «edo_y» de «anhomin_y» a «anhomax_y»',  sub = 'Fuente: INEGI', ylab = 'Actividad «var_name_y»', xlab = 'Año') 
+
+ 
+
+``` 
+
+ 
+
+### Aplico la prueba; Augmented Dickey-Fuller (adf.test) para observar si la serie tiene el problema de raíz unitaria. 
+
+ 
+
+```{r, echo=F, message=F, warning=FALSE} 
+
+test.raiz <- adf.test(var_y) 
+
+options(digits=4)  
+
+if (test.raiz$p.value < 0.05) 
+
+{ 
+
+valor <- test.raiz$p.value   
+
+    cat("No hay Raíz unitaria (serie de tiempo estacionaria) el valor p es: ", valor,    
+
+        "\ncomo esta serie no presenta raíz unitaria no se calcularán ni graficarán las diferencias.") 
+
+} else { 
+
+ valor <- test.raiz$p.value 
+
+    cat("Raíz unitaria (serie de tiempo no estacionaria) el valor p es: " , valor, 
+
+"\nDebido a que la serie no es estacionaria entonces se estabiliza la serie de tiempo", 
+
+ "\nantes de estimar el modelo.");      
+
+n_diff_y <- forecast::ndiffs(var_y, test = c("adf")) 
+
+    var_diff <- diff(var_y, n_diff_y) 
+
+    var_diff_log <- diff(log(var_y), n_diff_y) 
+
+ 
+
+ }     
+
+``` 
+
+ 
+
+«var_tend_y» 
+
+ 
+
+ 
+
+```{r, echo=FALSE, message=FALSE, include=«estaciMdw_y»} 
+
+«estaci2Script_y»plot(var_diff_log, type = 'l', main = 'Actividad «var_name_y» de «edo_y» de «anhomin_y» a «anhomax_y»',  sub = 'Fuente: INEGI', ylab = 'Logaritmo diferenciado', xlab = 'Año') 
+
+«estaci2Script_y»abline(h = mean(var_diff_log),col = 'blue') 
+
+ 
+
+ 
+
+``` 
+
+ 
+
+«var_est_y» 
+
+ 
+
+ 
+
+```{r, echo=FALSE, message=FALSE, include=«estacional_y»} 
+
+«estaci2Script_y»plot(diff(var_diff_log, lag = «S_s_y»), type = 'l', main = 'Actividad «var_name_y» de «edo_y» de «anhomin_y» a «anhomax_y»',  sub = 'Fuente: INEGI', ylab = 'Diferencias de orden «S_s_y»', xlab = 'Año') 
+
+«estaci2Script_y»abline(h = mean(diff(var_diff_log,lag = «S_s_y»)),col = 'blue') 
+
+ 
+
+``` 
+
+ 
+
+### Analizo las gráficas de la función de autocorrelación (ACF) y de la función de autocorrelación parcial (PACF) para obtener los patrones del proceso AR() y MA(). «correlo_y» «ar_puro_y» «ma_puro_y» 
+
+ 
+
+```{r, echo=FALSE, message=FALSE} 
+
+«estaci2Script_y»acf2(ts(var_diff, frequency = 1)) 
+
+«estaciACFScript_y»acf2(ts(var_y, frequency = 1)) 
+
+``` 
+
+ 
+
+ 
+
+ 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE} 
+
+ajuste_y <- arima(var_y, order = c(«p_s_y», «d_s_y», «q_s_y»), seasonal = list(order = c(«P_s_y1»,«D_s_y1»,«Q_s_y1»), period = «S_s_y»), method = '«methAj_y»', include.mean = TRUE) 
+
+tsdiag(ajuste_y) 
+
+«var_name_y_p» <- var_y 
+
+``` 
+
+ 
+
+### Analizo los p valores del estadístico Ljung-Box statistic para observar que los rezagos estén por arriba de la banda azul, si están por arriba de esa banda los rezagos son estadísticamente significativos, lo que significa que el modelo es adecuado para pronosticar. Se observa que el modelo es ideal para pronosticar. 
+
+ 
+
+ 
+
+ 
+
+### **Pronóstico de «iteraciones_y» «periodo_y» de la actividad «var_name_y» de «edo_y».** 
+
+ 
+
+ 
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE } 
+
+pronostico <- sarima.for(«var_name_y_p», n.ahead = «iteraciones_y», p = «p_s_y», d =«d_s_y», q = «q_s_y», P = «P_s_y1», D = «D_s_y1», Q = «Q_s_y1», S = «S_s_y», no.constant = FALSE) 
+
+ 
+
+ 
+
+``` 
+
+ 
+
+ 
+
+### Valores de la predicción 
+
+ 
+
+ 
+
+ 
+
+```{r, echo=F, message=F} 
+
+(values.predict <- pronostico$pred) 
+
+``` 
+
+ 
+
+ 
+
+ 
+
+ 
+
+```{r, echo=F, message=F} 
+
+ 
+
+resid_ajuste_y <- ajuste_y$residuals 
+
+plot(resid_ajuste_y, main = "Graficando los residuos del ajuste del modelo.", ylab = "Residuos", type = "o") 
+
+abline(h = mean(resid_ajuste_y), col = "blue") 
+
+ 
+
+ 
+
+``` 
+
+ 
+
+ 
+
+#### Resumen estadístico del ajuste del modelo 
+
+ 
+
+ 
+
+```{r, echo=F, message=F} 
+
+cat("Sigma Cuadrado:", ajuste_y$sigma2) 
+
+cat("Media de los residuos:", mean(resid_ajuste_y)) 
+
+ 
+
+cat("Akaike:",ajuste_y$aic) 
+
+``` 
+
+ 
+
+ 
+
+ 
+
+```{r echo=F, message=FALSE, warning=FALSE, paged.print=FALSE} 
+
+setwd('«ruta»')  
+
+«z» <- read.csv(«archivo_z», header = T, dec = '.', stringsAsFactors = F) 
+
+ 
+
+``` 
+
+ 
+
+```{r echo=F, message=FALSE, warning=FALSE} 
+
+var_z <- «z» 
+
+«anual_z»var_z <- ts(var_z, start = c(«anhomin_z»), end = c(«anhomax_z»)) 
+
+«anual_z»var_z <- var_z[, - 1] 
+
+ 
+
+    «difer_anual_z»var_z <- ts(var_z, start = c(«anhomin_z», «mes_z1»), frequency = «frec_z1») 
+
+    «difer_anual_z»var_z <- var_z[, - 1] 
+
+var_z <- zoo::na.approx(var_z) 
+
+ 
+
+``` 
+
+ 
+
+### Graficando la actividad «var_name_z» de «edo_z» de «anhomin_z» a «anhomax_z». 
+
+ 
+
+```{r, echo=FALSE, message=F} 
+
+ 
+
+plot(var_z, type = 'l', main = 'Actividad «var_name_z» de «edo_z» de «anhomin_z» a «anhomax_z»',  sub = 'Fuente: INEGI', ylab = 'Actividad «var_name_z»', xlab = 'Año') 
+
+ 
+
+``` 
+
+ 
+
+### Aplico la prueba; Augmented Dickey-Fuller (adf.test) para observar si la serie tiene el problema de raíz unitaria. 
+
+ 
+
+```{r, echo=F, message=F, warning=FALSE} 
+
+test.raiz <- adf.test(var_z) 
+
+options(digits=4)  
+
+if (test.raiz$p.value < 0.05) 
+
+{ 
+
+valor <- test.raiz$p.value   
+
+    cat("No hay Raíz unitaria (serie de tiempo estacionaria) el valor p es: ", valor,    
+
+        "\ncomo esta serie no presenta raíz unitaria no se calcularán ni graficarán las diferencias.") 
+
+} else { 
+
+ valor <- test.raiz$p.value 
+
+    cat("Raíz unitaria (serie de tiempo no estacionaria) el valor p es: " , valor, 
+
+          
+
+                "\nDebido a que la serie no es estacionaria entonces se estabiliza la serie de tiempo", 
+
+ "\nantes de estimar el modelo.");      
+
+n_diff_z <- forecast::ndiffs(var_z, test = c("adf")) 
+
+    var_diff <- diff(var_z, n_diff_z) 
+
+    var_diff_log <- diff(log(var_z), n_diff_z) 
+
+ 
+
+ }     
+
+``` 
+
+ 
+
+«var_tend_z» 
+
+ 
+
+ 
+
+```{r, echo=FALSE, message=FALSE, include=«estaciMdw_z»} 
+
+«estaci2Script_z»plot(var_diff_log, type = 'l', main = 'Actividad «var_name_z» de «edo_z» de «anhomin_z» a «anhomax_z»',  sub = 'Fuente: INEGI', ylab = 'Logaritmo diferenciado', xlab = 'Año') 
+
+«estaci2Script_z»abline(h = mean(var_diff_log),col = 'blue') 
+
+ 
+
+ 
+
+``` 
+
+ 
+
+«var_est_z» 
+
+ 
+
+ 
+
+```{r, echo=FALSE, message=FALSE, include=«estacional_z»} 
+
+«estaci2Script_z»plot(diff(var_diff_log, lag = «S_s_z»), type = 'l', main = 'Actividad «var_name_z» de «edo_z» de «anhomin_z» a «anhomax_z»',  sub = 'Fuente: INEGI', ylab = 'Diferencias de orden «S_s_z»', xlab = 'Año') 
+
+«estaci2Script_z»abline(h = mean(diff(var_diff_log,lag = «S_s_z»)),col = 'blue') 
+
+ 
+
+``` 
+
+ 
+
+### Analizo las gráficas de la función de autocorrelación (ACF) y de la función de autocorrelación parcial (PACF) para obtener los patrones del proceso AR() y MA(). «correlo_z» «ar_puro_z» «ma_puro_z» 
+
+ 
+
+```{r, echo=FALSE, message=FALSE} 
+
+«estaci2Script_z»acf2(ts(var_diff, frequency = 1)) 
+
+«estaciACFScript_z»acf2(ts(var_z, frequency = 1)) 
+
+``` 
+
+ 
+
+ 
+
+ 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE} 
+
+ajuste_z <- arima(var_z, order = c(«p_s_z», «d_s_z», «q_s_z»), seasonal = list(order = c(«P_s_z1»,«D_s_z1»,«Q_s_z1»), period = «S_s_z»), method = '«methAj_z»', include.mean = TRUE) 
+
+ 
+
+tsdiag(ajuste_z) 
+
+«var_name_z_p» <- var_z 
+
+``` 
+
+ 
+
+### Analizo los p valores del estadístico Ljung-Box statistic para observar que los rezagos estén por arriba de la banda azul, si están por arriba de esa banda los rezagos son estadísticamente significativos, lo que significa que el modelo es adecuado para pronosticar. Se observa que el modelo es ideal para pronosticar. 
+
+ 
+
+ 
+
+### **Pronóstico de «iteraciones_z» «periodo_z» de la actividad «var_name_z» de «edo_z».** 
+
+ 
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE} 
+
+pronostico <- sarima.for(«var_name_z_p», n.ahead = «iteraciones_z», p = «p_s_z», d = «d_s_z», q = «q_s_z», P = «P_s_z1», D = «D_s_z1», Q = «Q_s_z1», S = «S_s_z», no.constant = FALSE) 
+
+ 
+
+``` 
+
+ 
+
+### Valores de la predicción 
+
+ 
+
+```{r, echo=F, message=F} 
+
+(values.predict <- pronostico$pred) 
+
+``` 
+
+ 
+
+ 
+
+ 
+
+```{r, echo=F, message=F} 
+
+ 
+
+ resid_ajuste_z <- ajuste_z$residuals 
+
+plot(resid_ajuste_z, main = "Graficando los residuos del ajuste del modelo.", ylab = "Residuos", type = "o") 
+
+abline(h = mean(resid_ajuste_z), col = "blue") 
+
+ 
+
+ 
+
+``` 
+
+ 
+
+#### Resumen estadístico del ajuste del modelo 
+
+ 
+
+ 
+
+```{r, echo=F, message=F} 
+
+cat("Sigma Cuadrado:", ajuste_z$sigma2) 
+
+cat("Media de los residuos:", mean(resid_ajuste_z)) 
+
+ 
+
+cat("Akaike:",ajuste_z$aic) 
+
+``` 
+
+ 
+``` 
+![](«ruta_imagen») 
+
+ 
+
+«leyenda_link» 
+
+[«link»](«link»)  
+``` 
+ 
+
+ 
